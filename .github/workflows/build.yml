@@ -40,17 +40,20 @@ jobs:
       - name: Create Flet Configuration File
         run: |
           cat << 'EOF' > flet.yaml
+          app:
+            title: "Alwafa Admin"
+            organization: "com.alwafa.admin"
+            name: "alwafa_admin"
           icon: logo.png
           EOF
 
       - name: Build APK
         run: |
-          # Build APK with custom org name and app name to prevent package name collision
-          flet build apk --org com.alwafa.admin --app-name alwafa_admin
+          # Build APK using configurations defined in flet.yaml
+          flet build apk
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-release
           path: build/apk/*.apk
-
