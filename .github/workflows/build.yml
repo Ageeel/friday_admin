@@ -1,1 +1,56 @@
+name: Build Flet APK
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Setup Java (Required for Android SDK)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.0'
+          channel: 'stable'
+          cache: true
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flet>=0.22.0
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Create Flet Configuration File
+        run: |
+          cat << 'EOF' > flet.yaml
+          icon: logo.png
+          EOF
+
+      - name: Build APK
+        run: |
+          # Build APK with custom org name and app name to prevent package name collision
+          flet build apk --org com.alwafa.admin --app-name alwafa_admin
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release
+          path: build/apk/*.apk
 
