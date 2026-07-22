@@ -34,7 +34,7 @@ jobs:
       - name: Install Python Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install flet>=0.22.0
+          pip install "flet>=0.22.0"
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       - name: Create Flet Configuration File
@@ -43,13 +43,12 @@ jobs:
           app:
             title: "Alwafa Admin"
             organization: "com.alwafa.admin"
-            name: "alwafa_admin"
-          icon: logo.png
+            name: "إدارة كل جمعة"
+          icon: "assets/logo.png"
           EOF
 
       - name: Build APK
         run: |
-          # Build APK using configurations defined in flet.yaml
           flet build apk
 
       - name: Upload APK Artifact
