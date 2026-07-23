@@ -16,7 +16,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.10'
 
       - name: Setup Java (Required for Android SDK)
         uses: actions/setup-java@v4
@@ -27,29 +27,32 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.22.0'
+          flutter-version: '3.19.0'
           channel: 'stable'
-          cache: true
 
       - name: Install Python Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install "flet>=0.22.0"
+          pip install flet==0.19.0
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      - name: Create Flet Configuration
+      # 1. تهيئة مشروع أندرويد أولاً لتوليد المجلدات
+      - name: Initialize Flet Project
         run: |
-          cat << 'EOF' > flet.yaml
-          app:
-            title: "Alwafa Admin"
-            organization: "com.alwafa.admin"
-            name: "alwafa_admin"
-          icon: "assets/logo.png"
-          EOF
+          flet build apk --no-pub-get || true
 
-      - name: Build APK with Verbose Output
+      # 2. نسخ الأيقونة باسمها الجديد (icon.png) إلى المجلدات المنشأة
+      - name: Inject Custom Icon & Configs
         run: |
-          flet build apk -v
+          mkdir -p android/app/src/main/res/mipmap-xxxhdpi
+          if [ -f "assets/icon.png" ]; then
+            cp assets/icon.png android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+          fi
+
+      # 3. إكمال البناء النهائي
+      - name: Build APK
+        run: |
+          flet build apk
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
