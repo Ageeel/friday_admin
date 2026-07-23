@@ -37,31 +37,19 @@ jobs:
           pip install "flet>=0.22.0"
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      - name: Initialize Flet Project Layout
+      - name: Create Flet Configuration
         run: |
-          # إنشاء بناء أولي لتوليد مجلدات الأندرويد
-          flet build apk --no-pub-get || true
+          cat << 'EOF' > flet.yaml
+          app:
+            title: "Alwafa Admin"
+            organization: "com.alwafa.admin"
+            name: "alwafa_admin"
+          icon: "assets/logo.png"
+          EOF
 
-      - name: Inject Custom App Name and Icon
+      - name: Build APK with Verbose Output
         run: |
-          # 1. تغيير اسم التطبيق إلى "Alwafa Admin"
-          mkdir -p android/app/src/main/res/values
-          echo '<?xml version="1.0" encoding="utf-8"?><resources><string name="app_name">Alwafa Admin</string></resources>' > android/app/src/main/res/values/strings.xml
-
-          # 2. استبدال الأيقونة logo.png بجميع مجلدات أبعاد الأندرويد
-          if [ -f "assets/logo.png" ]; then
-            for dir in mipmap-mdpi mipmap-hdpi mipmap-xhdpi mipmap-xxhdpi mipmap-xxxhdpi; do
-              mkdir -p "android/app/src/main/res/$dir"
-              cp assets/logo.png "android/app/src/main/res/$dir/ic_launcher.png"
-            done
-            echo "Icon successfully copied!"
-          else
-            echo "Warning: assets/logo.png not found!"
-          fi
-
-      - name: Complete Build APK
-        run: |
-          flet build apk
+          flet build apk -v
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
